@@ -35,32 +35,59 @@ for market in markets:
             tmn.append(market)
 
     for x in tmn :
-        ValueOfMarkets = markets.get(x)
+        ValueOfMarketsTMN = markets.get(x)
+    for y in usdt :
+        ValueOfMarketsUSDT  = markets.get(y)
 
-    AskValueOfMarkets = ValueOfMarkets["ask"]
-    BidValueOfMarkets = ValueOfMarkets["bid"]
+    AskValueOfMarketsTMN = ValueOfMarketsTMN["ask"]
+    BidValueOfMarketsTMN = ValueOfMarketsTMN["bid"]
+    AskValueOfMarketsUSDT = ValueOfMarketsUSDT["ask"]
+    BidValueOfMarketsUSDT = ValueOfMarketsUSDT["bid"]
+
+    BidpricesTmn = []
+    AskpricesTmn = []
+    BidpricesUsdt=[]
+    AskpricesUsdt=[]
+
+    axxTmn = []
+    bxxTmn = []
+    axxUsdt = []
+    bxxUsdt = []
     
-    Bidprices = []
-    Askprices = []
-    
-    axx = []
-    bxx = []
-    
-    for Aprice in AskValueOfMarkets:
-        Askprices.append([float(Aprice["price"])])
+    for ApriceTmn in AskValueOfMarketsTMN:
+        AskpricesTmn.append([float(ApriceTmn["price"])])
         
-    for Aorders in Askprices:
-        axx.append(Aorders)
-        Ask_Order_out_of_list = min(axx)
+    for AordersTmn in AskpricesTmn:
+        axxTmn.append(AordersTmn)
+        Ask_Order_out_of_list_TMN = min(axxTmn)
     
-    for Bprice in BidValueOfMarkets:
-        Bidprices.append([float(Bprice["price"])])
+    for BpriceTmn in BidValueOfMarketsTMN:
+        BidpricesTmn.append([float(BpriceTmn["price"])])
     
-    for Borders in Bidprices:
-        bxx.append(Borders)
-        Bid_Order_out_of_list = (max(bxx))
+    for BordersTmn in BidpricesTmn:
+        bxxTmn.append(BordersTmn)
+        Bid_Order_out_of_list_TMN = (max(bxxTmn))
+
+########################################################################################
+
+    for ApriceUsdt in AskValueOfMarketsUSDT:
+        AskpricesUsdt.append([float(ApriceUsdt["price"])])
+        
+    for AordersUsdt in AskpricesUsdt:
+        axxUsdt.append(AordersUsdt)
+        Ask_Order_out_of_list_USDT = min(axxUsdt)
+    
+    for BpriceUsdt in BidValueOfMarketsUSDT:
+        BidpricesUsdt.append([float(BpriceUsdt["price"])])
+    
+    for BordersUsdt in BidpricesUsdt:
+        bxxUsdt.append(BordersUsdt)
+        Bid_Order_out_of_list_USDT = (max(bxxUsdt))
+        
             
-    print("In market", x, "Ask price is", Ask_Order_out_of_list, "Bid price is", Bid_Order_out_of_list)
+    print("In market", x, "Ask price is", Ask_Order_out_of_list_TMN, "Bid price is", Ask_Order_out_of_list_TMN)
+    print("In market", y, "Ask price is", Ask_Order_out_of_list_USDT, "Bid price is", Ask_Order_out_of_list_USDT)
+
 
 
 tmn.remove("DAITMN")
