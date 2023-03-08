@@ -1,0 +1,340 @@
+import requests 
+import os 
+import time 
+
+NobitexTmnCoins = ['BCHIRT', 'BNBIRT', 'LTCIRT', 'BTCIRT', 'ETHIRT', 'XRPIRT', 'EOSIRT', 'XLMIRT', 'ETCIRT', 'TRXIRT', 'UNIIRT', 'LINKIRT', 'AAVEIRT', 'DOTIRT', 'MATICIRT', 'AXSIRT', 'DOGEIRT', 'MANAIRT', 'FTMIRT', 'AVAXIRT', 'SANDIRT', 'MKRIRT', 'ADAIRT', 'ATOMIRT', 'GMTIRT', 'SOLIRT', 'APEIRT', 'NEARIRT', 'CHZIRT', 'YFIIRT', 'ENJIRT', 'SHIBIRT', 'FILIRT', '1INCHIRT', 'USDTIRT'] 
+NobitexUsdtCoins = ['BCHUSDT', 'BNBUSDT', 'LTCUSDT', 'BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'EOSUSDT', 'XLMUSDT', 'ETCUSDT', 'TRXUSDT', 'UNIUSDT', 'LINKUSDT', 'AAVEUSDT', 'DOTUSDT', 'MATICUSDT', 'AXSUSDT', 'DOGEUSDT', 'MANAUSDT', 'FTMUSDT', 'AVAXUSDT', 'SANDUSDT', 'MKRUSDT', 'ADAUSDT', 'ATOMUSDT', 'GMTUSDT', 'SOLUSDT', 'APEUSDT', 'NEARUSDT', 'CHZUSDT', 'YFIUSDT', 'ENJUSDT', 'SHIBUSDT', 'FILUSDT', '1INCHUSDT']
+
+api_url = "https://api.nobitex.ir/v2/orderbook/all"
+data = requests.get(api_url).json()
+del data['status']
+currencies = list(data.keys())
+
+# loop through each main key
+minAsksTMNNobitex =[]
+maxBidsTMNNobitex =[]
+maxBidsUSDTobitex=[]
+minAsksUSDTNobitex=[]
+
+for currency in data:
+    # check if there are bids and asks for this currency
+    if currency in NobitexTmnCoins :
+        if not data[currency]['bids'] or not data[currency]['asks']:
+            continue
+
+        # get the max bids by finding the first value from the bids list
+        max_bid = data[currency]["bids"][0][0]
+
+        # get the min asks by finding the first value from the asks list
+        min_ask = data[currency]["asks"][0][0]
+        
+        # get USDTIRT ask/bid values
+        usdtirt_ask = float(data["USDTIRT"]["asks"][0][0])
+        usdtirt_bid = float (data["USDTIRT"]["bids"][0][0])
+
+        maxBidsTMNNobitex.append({currency : (float (min_ask) / usdtirt_ask) })
+        minAsksTMNNobitex.append({currency: (float (max_bid) / usdtirt_bid)})
+        # print the required output
+        #print(f"{currency}: For max bids: {max_bid}, for min asks: {min_ask}") 
+    elif currency in NobitexUsdtCoins :
+            if not data[currency]['bids'] or not data[currency]['asks']:
+                continue
+
+            # get the max bids by finding the first value from the bids list
+            max_bid = data[currency]["bids"][0][0]
+
+            # get the min asks by finding the first value from the asks list
+            min_ask = data[currency]["asks"][0][0]
+
+            maxBidsUSDTobitex.append({currency : float (min_ask) })
+            minAsksUSDTNobitex.append({currency: float (max_bid)})
+            # print the required output
+            #print(f"{currency}: For max bids: {max_bid}, for min asks: {min_ask}")   
+  
+    else :continue
+
+minAsksUSDTNobitex = sorted(minAsksUSDTNobitex, key=lambda x: NobitexUsdtCoins.index(list(x.keys())[0]))
+maxBidsUSDTobitex = sorted(maxBidsUSDTobitex, key=lambda x: NobitexUsdtCoins.index(list(x.keys())[0]))
+maxBidsTMNNobitex = sorted(maxBidsTMNNobitex, key=lambda x: NobitexTmnCoins.index(list(x.keys())[0]))
+minAsksTMNNobitex = sorted(minAsksTMNNobitex, key=lambda x: NobitexTmnCoins.index(list(x.keys())[0]))
+
+
+
+WallexTmnCoins = ['BCHTMN', 'BNBTMN', 'LTCTMN', 'BTCTMN', 'ETHTMN', 'XRPTMN', 'EOSTMN', 'XLMTMN', 'ETCTMN',  'TRXTMN', 'UNITMN', 'LINKTMN', 'AAVETMN', 'DOTTMN', 'MATICTMN', 'AXSTMN', 'DOGETMN', 'MANATMN', 'FTMTMN', 'AVAXTMN', 'SANDTMN', 'MKRTMN', 'ADATMN', 'ATOMTMN', 'GMTTMN', 'SOLTMN', 'APETMN', 'NEARTMN', 'CHZTMN', 'YFITMN', 'ENJTMN', 'SHIBTMN', 'FILTMN', '1INCHTMN', 'USDTTMN']
+WallexUsdtCoins = ['BCHUSDT', 'BNBUSDT', 'LTCUSDT', 'BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'EOSUSDT', 'XLMUSDT', 'ETCUSDT', 'TRXUSDT', 'UNIUSDT', 'LINKUSDT', 'AAVEUSDT', 'DOTUSDT', 'MATICUSDT', 'AXSUSDT', 'DOGEUSDT', 'MANAUSDT', 'FTMUSDT', 'AVAXUSDT', 'SANDUSDT', 'MKRUSDT', 'ADAUSDT', 'ATOMUSDT', 'GMTUSDT', 'SOLUSDT', 'APEUSDT', 'NEARUSDT', 'CHZUSDT', 'YFIUSDT', 'ENJUSDT', 'SHIBUSDT', 'FILUSDT', '1INCHUSDT']
+
+
+
+url = "https://api.wallex.ir/v2/depth/all"
+r = requests.get(url).json()
+minAsksWallex = []
+maxBidsWallex = []
+if r['success']:
+    result = r['result']
+output = {}
+for pair, data in result.items():
+    if  pair in WallexTmnCoins:
+        min_ask = min(data['ask'], key=lambda k: float(k['price']))
+        max_bid = max(data['bid'], key=lambda k: float(k['price']))
+        minAskPrice = min_ask['price']
+        maxBidPrice = max_bid['price']
+        output[pair] = minAskPrice + " | " + maxBidPrice
+        minAsksWallex.append({pair: minAskPrice})
+        maxBidsWallex.append({pair: maxBidPrice})
+
+USDTTMN_MinAskPrice = output['USDTTMN'].split(' | ')[0]
+USDTTMN_MaxBidPrice = output['USDTTMN'].split(' | ')[1]
+
+FinalUSDTMinAsk = []
+FinalUSDTMaxBid = []
+FinalTMNMinAsk = []
+FinalTMNMaxBid = []
+
+for item in minAsksWallex:
+    if 'TMN' in list(item.keys())[0]:
+        FinalTMNMinAsk .append({list(item.keys())[0]: (float(item[list(item.keys())[0]]) / float(USDTTMN_MaxBidPrice))})
+
+for item in maxBidsWallex:
+    if 'TMN' in list(item.keys())[0]:
+        FinalTMNMaxBid.append({list(item.keys())[0]: (float(item[list(item.keys())[0]]) / float(USDTTMN_MinAskPrice))})
+
+
+for pair, data in result.items():
+    if pair in WallexUsdtCoins :
+        min_ask = min(data['ask'], key=lambda k: float(k['price']))
+        max_bid = max(data['bid'], key=lambda k: float(k['price'])) 
+        minAskPrice = min_ask['price']
+        maxBidPrice = max_bid['price']
+        output[pair] = minAskPrice + " | " + maxBidPrice
+
+        FinalUSDTMinAsk.append({pair : minAskPrice })
+        FinalUSDTMaxBid.append({pair:maxBidPrice})
+
+FinalUSDTMinAsk = sorted(FinalUSDTMinAsk, key=lambda x: WallexUsdtCoins.index(list(x.keys())[0]))
+FinalUSDTMaxBid = sorted(FinalUSDTMaxBid, key=lambda x: WallexUsdtCoins.index(list(x.keys())[0]))
+FinalTMNMaxBid = sorted(FinalTMNMaxBid, key=lambda x: WallexTmnCoins.index(list(x.keys())[0]))
+FinalTMNMinAsk = sorted(FinalTMNMinAsk, key=lambda x: WallexTmnCoins.index(list(x.keys())[0]))
+
+
+
+#print ()
+#print ()
+#print ()
+#print ()
+
+ValueFinalUSDTMinAsk=[]
+ValueFinalUSDTMaxBid=[]
+
+ValueFinalTMNMaxBid=[]
+ValueFinalTMNMinAsk=[]
+
+ValueminAsksTMNNobitex=[]
+ValuemaxBidsTMNNobitex=[]
+
+ValuemaxBidsUSDTobitex=[]
+ValueminAsksUSDTNobitex=[]
+
+
+for dictionary in FinalUSDTMinAsk :
+    for key, value in dictionary.items():
+        value= float(value)
+        ValueFinalUSDTMinAsk.append(value)
+
+for dictionary in FinalUSDTMaxBid :
+    for key, value in dictionary.items():
+        value=float(value)
+        ValueFinalUSDTMaxBid.append(value)
+
+for dictionary in FinalTMNMaxBid :
+    for key, value in dictionary.items():
+        ValueFinalTMNMaxBid.append(value)
+
+for dictionary in FinalTMNMinAsk :
+    for key, value in dictionary.items():
+        ValueFinalTMNMinAsk.append(value)
+
+
+
+for dictionary in minAsksTMNNobitex :
+    for key, value in dictionary.items():
+        value= float(value)
+        ValueminAsksTMNNobitex.append(value)
+
+for dictionary in maxBidsTMNNobitex :
+    for key, value in dictionary.items():
+        value=float(value)
+        ValuemaxBidsTMNNobitex.append(value)
+
+for dictionary in maxBidsUSDTobitex :
+    for key, value in dictionary.items():
+        ValuemaxBidsUSDTobitex.append(value)
+
+for dictionary in minAsksUSDTNobitex :
+    for key, value in dictionary.items():
+        ValueminAsksUSDTNobitex.append(value)
+no=0
+while 1>0 :
+    ##############################################    ##############################################    ##############################################    ##############################################
+
+    z=0
+    for  x in ValueFinalUSDTMinAsk :
+        if x < ValueFinalTMNMaxBid[z] :
+            print ("you can buy at : " , x ,"in market : " , WallexUsdtCoins[z] , "in wallex" , "and" , "sell at" , ValueFinalTMNMaxBid[z] , "in market :",WallexTmnCoins[z] , "at wallex")
+            z=z+1
+        else :     
+            z=z+1 
+            continue
+
+    ##############################################
+
+    z=0
+    for  x in ValueFinalUSDTMaxBid :
+        if x > ValueFinalTMNMinAsk[z] :
+            print ("you can buy at : " , x ,"in market : " , WallexTmnCoins[z] , "in wallex" , "and" , "sell at" , ValueFinalTMNMinAsk[z] , "in market :",WallexUsdtCoins[z], "at wallex" )
+            z=z+1
+        else :     
+            z=z+1 
+            continue
+
+    ##############################################    ##############################################    ##############################################    ##############################################
+
+    z=0
+    for  x in ValueFinalUSDTMinAsk :
+        if x < ValuemaxBidsUSDTobitex[z] :
+            print ("you can buy at : " , x ,"in market : " , WallexUsdtCoins[z] , "in wallex" , "and" , "sell at" , ValuemaxBidsUSDTobitex[z] , "in market :",NobitexUsdtCoins[z], "at Nobitex" )
+            z=z+1
+        else :     
+            z=z+1 
+            continue
+
+    ##############################################
+
+    z=0
+    for  x in ValueminAsksUSDTNobitex :
+        if x < ValueFinalUSDTMaxBid[z] :
+            print ("you can buy at : " , x ,"in market : " , NobitexUsdtCoins[z] , "in nobitex" , "and" , "sell at" , ValueFinalUSDTMaxBid[z] , "in market :",WallexUsdtCoins[z], "at wallex" )
+            z=z+1
+        else :     
+            z=z+1 
+            continue
+    ##############################################     ##############################################    ##############################################    ##############################################    ##############################################
+
+    z=0
+
+    for  x in ValueminAsksTMNNobitex :
+        if z < 35 :
+            if x < ValueFinalTMNMaxBid[z] :
+                print ("you can buy at : " , x ,"in market : " , NobitexTmnCoins[z] , "in nobitex" , "and" , "sell at" , ValueFinalTMNMaxBid[z] , "in market :",WallexTmnCoins[z], "at wallex" )
+                z=z+1
+            else :     
+                z=z+1 
+                continue
+        else : break
+
+    ##############################################
+    z=0
+
+    for  x in ValueFinalTMNMinAsk :
+        if z < 35 :
+            if x < ValuemaxBidsTMNNobitex[z] :
+                print ("you can buy at : " , x ,"in market : " , WallexTmnCoins[z] , "in wallex" , "and" , "sell at" , ValuemaxBidsTMNNobitex[z] , "in market :",NobitexTmnCoins[z], "at Nobitex" )
+                z=z+1
+                 
+            else :     
+                z=z+1 
+                continue
+        else : break
+
+    ##############################################     ##############################################    ##############################################    ##############################################
+
+    z=0
+
+    for  x in ValueFinalTMNMinAsk :
+        if z < 34 :
+            if x < ValuemaxBidsUSDTobitex [z] :
+                print ("you can buy at : " , x  ,"in market : " , WallexTmnCoins[z] , "in wallex" , "and" , "sell at" , ValuemaxBidsUSDTobitex[z] , "in market :", NobitexUsdtCoins[z], "at Nobitex" )
+                z=z+1
+                no=no+1
+
+            else :     
+                z=z+1 
+                continue
+        else :break
+
+
+    ##############################################
+
+    z=0
+
+    for  x in ValueFinalUSDTMinAsk :
+        if z <36 :
+            if x < ValuemaxBidsTMNNobitex [z] :
+                print ("you can buy at : " , x  ,"in market : " , WallexUsdtCoins[z] , "in wallex" , "and" , "sell at" , ValuemaxBidsTMNNobitex[z] , "in market :", NobitexTmnCoins[z], "at Nobitex" )
+                z=z+1
+                no=no+1                
+            else :     
+                z=z+1 
+                continue
+        else :break
+
+    ##############################################
+    z=0
+
+    for  x in ValueminAsksTMNNobitex :
+        if z <34 :
+            if x < ValueFinalUSDTMaxBid [z] :
+                print ("you can buy at : " , x  ,"in market : " , NobitexTmnCoins[z] , "in nobitex" , "and" , "sell at" , ValueFinalUSDTMaxBid[z] , "in market :", WallexUsdtCoins[z], "at wallex" )
+                z=z+1
+                no=no+1
+            else :     
+                z=z+1 
+                continue
+        else :break
+
+    ##############################################
+    z=0
+
+    for  x in ValueminAsksUSDTNobitex :
+        if z <36 :
+            if x < ValueFinalTMNMaxBid [z] :
+                print ("you can buy at : " , x  ,"in market : " , NobitexUsdtCoins[z] , "in nobitex" , "and" , "sell at" , ValueFinalTMNMaxBid[z] , "in market :", WallexTmnCoins[z], "at wallex" )
+                z=z+1
+                no=no+1
+            else :     
+                z=z+1 
+                continue
+        else :break
+
+
+
+
+##############################################            ##############################################    ##############################################    ##############################################
+
+
+    z=0
+
+    for  x in ValueminAsksUSDTNobitex :
+            if x < ValuemaxBidsTMNNobitex [z] :
+                print ("you can buy at : " , x  ,"in market : " , NobitexUsdtCoins[z] , "in nobitex" , "and" , "sell at" , ValuemaxBidsTMNNobitex[z] , "in market :", NobitexTmnCoins[z], "at Nobitex" )
+                z=z+1
+            else :     
+                z=z+1 
+                continue
+
+
+    ##############################################
+    z=0
+
+    for  x in ValueminAsksTMNNobitex :
+        if z <34 :
+            if x < ValuemaxBidsUSDTobitex [z] :
+                print ("you can buy at : " , x  ,"in market : " , NobitexTmnCoins[z] , "in nobitex" , "and" , "sell at" , ValuemaxBidsUSDTobitex[z] , "in market :", NobitexUsdtCoins[z], "at Nobitex" )
+                z=z+1
+            else :     
+                z=z+1 
+                continue
+        else : break
+    
+    print (no)
+    time.sleep(10)
+
